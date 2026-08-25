@@ -171,7 +171,7 @@ export default function About() {
           </p>
 
           <div className="flex flex-col sm:flex-row items-center justify-center gap-6">
-            <MagneticButton onClick={() => { navigate('/platforms'); window.scrollTo(0,0); }} className="relative group w-full sm:w-auto overflow-hidden rounded-full p-[1px] transform-gpu">
+            <MagneticButton onClick={() => { navigate('/'); setTimeout(() => document.getElementById('infrastructure')?.scrollIntoView({ behavior: 'smooth' }), 100); }} className="relative group w-full sm:w-auto overflow-hidden rounded-full p-[1px] transform-gpu">
               <span className="absolute inset-0 bg-gradient-to-r from-ai-cyan via-violet-glow to-electric-blue opacity-70 group-hover:opacity-100 group-hover:animate-pulse transition-opacity duration-500 rounded-full" />
               <div className="relative flex items-center justify-center gap-2 px-8 py-4 bg-midnight-black/60 backdrop-blur-xl rounded-full border border-white/10 group-hover:bg-midnight-black/80 transition-all duration-300">
                 <span className="relative z-10 text-white font-medium tracking-wide">Explore Our Ecosystem</span>
@@ -410,7 +410,7 @@ export default function About() {
                <MagneticButton onClick={() => { navigate('/partner'); window.scrollTo(0,0); }} className="px-10 py-5 bg-white text-midnight-black font-semibold rounded-full hover:bg-ai-cyan transition-colors flex items-center justify-center gap-2 text-lg">
                   Partner With Us <ArrowRight className="w-5 h-5" />
                </MagneticButton>
-               <button onClick={() => { navigate('/platforms'); window.scrollTo(0,0); }} className="px-10 py-5 bg-glass-surface border border-glass-border text-white font-medium rounded-full hover:bg-white/10 transition-colors text-lg">
+               <button onClick={() => { navigate('/'); setTimeout(() => document.getElementById('infrastructure')?.scrollIntoView({ behavior: 'smooth' }), 100); }} className="px-10 py-5 bg-glass-surface border border-glass-border text-white font-medium rounded-full hover:bg-white/10 transition-colors text-lg">
                   Explore Platforms
                </button>
             </div>

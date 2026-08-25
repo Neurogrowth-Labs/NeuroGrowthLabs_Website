@@ -19,6 +19,7 @@ import AIEthics from './pages/AIEthics';
 import CookiePolicy from './pages/CookiePolicy';
 import DPA from './pages/DPA';
 import SecurityPolicy from './pages/SecurityPolicy';
+import NotFound from './pages/NotFound';
 import { AuthProvider } from './components/AuthContext';
 import { ErrorBoundary } from './components/ErrorBoundary';
 import { ThemeProvider } from './components/ThemeContext';
@@ -58,6 +59,7 @@ function AnimatedRoutes() {
         <Route path="/cookie-policy" element={<PageTransition><CookiePolicy /></PageTransition>} />
         <Route path="/dpa" element={<PageTransition><DPA /></PageTransition>} />
         <Route path="/security-policy" element={<PageTransition><SecurityPolicy /></PageTransition>} />
+        <Route path="*" element={<PageTransition><NotFound /></PageTransition>} />
       </Routes>
     </AnimatePresence>
   );

@@ -33,8 +33,8 @@ export default function CTASection() {
           <div className="flex flex-col sm:flex-row items-center justify-center gap-6 relative z-20">
             <MagneticButton 
               onClick={() => {
-                navigate('/platforms');
-                window.scrollTo(0, 0);
+                navigate('/');
+                setTimeout(() => document.getElementById('infrastructure')?.scrollIntoView({ behavior: 'smooth' }), 100);
               }}
               className="relative group w-full sm:w-auto overflow-hidden rounded-full p-[1px] transform-gpu"
             >

@@ -148,6 +148,7 @@ const LeadershipCard = ({ member, isExpanded, onExpand, onClose }: any) => {
   const cardRef = useRef<HTMLDivElement>(null);
   const mouseX = useMotionValue(0);
   const mouseY = useMotionValue(0);
+  const [imageError, setImageError] = useState(false);
 
   const handleMouseMove = (e: React.MouseEvent) => {
     if (!cardRef.current) return;
@@ -161,49 +162,107 @@ const LeadershipCard = ({ member, isExpanded, onExpand, onClose }: any) => {
     mouseY.set(0);
   };
 
+  const getInitials = (name: string) => {
+    return name
+      .replace(/Mr\.|MBA|Dr\.|Prof\./g, '')
+      .trim()
+      .split(' ')
+      .filter(Boolean)
+      .map(part => part[0])
+      .slice(0, 2)
+      .join('')
+      .toUpperCase();
+  };
+
   // EXPANDED MODAL VIEW
   if (isExpanded) {
     return (
       <motion.div
         layout
-        className="w-[90vw] md:w-[550px] lg:w-[600px] h-[80vh] rounded-2xl bg-midnight-black border border-glass-border overflow-hidden flex flex-col"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby={`modal-title-${member.name.replace(/\s+/g, '-')}`}
+        className="w-[92vw] md:w-[600px] lg:w-[680px] max-h-[85vh] rounded-2xl bg-midnight-black border border-glass-border overflow-hidden flex flex-col shadow-2xl z-[10000]"
       >
         {/* Header */}
-        <div className="flex-shrink-0 bg-midnight-black border-b border-glass-border p-5">
+        <div className="flex-shrink-0 bg-midnight-black/95 border-b border-glass-border p-6 backdrop-blur-xl">
           <div className="flex justify-between items-start gap-4">
             <div className="flex items-center gap-4">
-              {member.image && (
-                <img src={member.image} alt={member.name} className="w-14 h-14 rounded-full object-cover border-2 border-ai-cyan/30" referrerPolicy="no-referrer" />
+              {member.image && !imageError ? (
+                <img 
+                  src={member.image} 
+                  alt={member.name} 
+                  onError={() => setImageError(true)}
+                  className="w-16 h-16 rounded-full object-cover object-top border-2 border-ai-cyan/40 shadow-lg" 
+                  referrerPolicy="no-referrer" 
+                />
+              ) : (
+                <div className="w-16 h-16 rounded-full bg-gradient-to-br from-electric-blue/30 to-violet-glow/30 border-2 border-ai-cyan/40 flex items-center justify-center font-bold text-white text-lg">
+                  {getInitials(member.name)}
+                </div>
               )}
               <div>
-                <h3 className="text-xl font-bold text-white">{member.name}</h3>
-                <p className="text-ai-cyan font-mono text-xs uppercase tracking-wider">{member.role}</p>
+                <h3 id={`modal-title-${member.name.replace(/\s+/g, '-')}`} className="text-xl md:text-2xl font-bold text-white">
+                  {member.name}
+                </h3>
+                <p className="text-ai-cyan font-mono text-xs uppercase tracking-wider mt-1">{member.role}</p>
               </div>
             </div>
-            <button onClick={onClose} className="w-9 h-9 rounded-full bg-white/5 border border-glass-border flex items-center justify-center text-quantum-silver hover:text-red-400 hover:border-red-400 transition-all flex-shrink-0">
-              <X className="w-4 h-4" />
+            <button 
+              onClick={onClose} 
+              aria-label="Close modal"
+              className="w-10 h-10 rounded-full bg-white/5 border border-glass-border flex items-center justify-center text-quantum-silver hover:text-red-400 hover:border-red-400 hover:bg-red-500/10 transition-all flex-shrink-0"
+            >
+              <X className="w-5 h-5" />
             </button>
           </div>
         </div>
 
         {/* Scrollable Content */}
-        <div className="flex-1 overflow-y-auto p-5 space-y-5">
+        <div className="flex-1 overflow-y-auto p-6 space-y-6">
           {member.longBio && (
             <div className="space-y-3">
+              <h4 className="text-ai-cyan font-mono text-xs uppercase tracking-wider">Executive Overview</h4>
               {member.longBio.map((para: string, idx: number) => (
                 <p key={idx} className="text-quantum-silver text-sm leading-relaxed">{para}</p>
               ))}
             </div>
           )}
 
+          {member.honors && (
+            <div className="pt-4 border-t border-glass-border">
+              <h4 className="text-ai-cyan font-mono text-xs uppercase tracking-wider mb-3">Distinguished Honors & Awards</h4>
+              <div className="p-4 rounded-xl bg-gradient-to-r from-ai-cyan/10 to-electric-blue/10 border border-ai-cyan/30">
+                <p className="text-white font-medium text-sm flex items-center gap-2">
+                  <span className="w-2 h-2 rounded-full bg-ai-cyan animate-pulse" />
+                  {member.honors}
+                </p>
+              </div>
+            </div>
+          )}
+
+          {member.credentials && (
+            <div className="pt-4 border-t border-glass-border">
+              <h4 className="text-ai-cyan font-mono text-xs uppercase tracking-wider mb-3">Verified Certifications & Credentials</h4>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+                {member.credentials.map((cred: any, idx: number) => (
+                  <div key={idx} className="p-3 rounded-lg bg-white/5 border border-glass-border hover:border-ai-cyan/30 transition-colors">
+                    <div className="font-semibold text-white text-xs mb-1">{cred.title}</div>
+                    <div className="text-quantum-silver text-[11px] font-mono">{cred.issuer}</div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
           {member.keyPillars && (
             <div className="pt-4 border-t border-glass-border">
-              <h4 className="text-ai-cyan font-mono text-xs uppercase tracking-wider mb-3">Core Pillars</h4>
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+              <h4 className="text-ai-cyan font-mono text-xs uppercase tracking-wider mb-3">Core Strategic Pillars</h4>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
                 {member.keyPillars.map((pillar: any, idx: number) => (
-                  <div key={idx} className="p-3 rounded-lg bg-white/5 border border-glass-border">
-                    <div className="font-medium text-white text-sm mb-1">{pillar.title}</div>
-                    <div className="text-quantum-silver text-xs">{pillar.description}</div>
+                  <div key={idx} className="p-3.5 rounded-lg bg-white/5 border border-glass-border hover:border-violet-glow/30 transition-colors">
+                    <div className="font-semibold text-white text-xs mb-1">{pillar.title}</div>
+                    <div className="text-quantum-silver text-[11px] leading-relaxed">{pillar.description}</div>
                   </div>
                 ))}
               </div>
@@ -212,35 +271,12 @@ const LeadershipCard = ({ member, isExpanded, onExpand, onClose }: any) => {
 
           {member.expertise && (
             <div className="pt-4 border-t border-glass-border">
-              <h4 className="text-ai-cyan font-mono text-xs uppercase tracking-wider mb-3">Expertise</h4>
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+              <h4 className="text-ai-cyan font-mono text-xs uppercase tracking-wider mb-3">Technical Track Record & Expertise</h4>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
                 {member.expertise.map((exp: any, idx: number) => (
-                  <div key={idx} className="p-3 rounded-lg bg-white/5 border border-glass-border">
-                    <div className="font-medium text-white text-sm mb-1">{exp.field}</div>
-                    <div className="text-quantum-silver text-xs">{exp.tech}</div>
-                  </div>
-                ))}
-              </div>
-            </div>
-          )}
-
-          {member.honors && (
-            <div className="pt-4 border-t border-glass-border">
-              <h4 className="text-ai-cyan font-mono text-xs uppercase tracking-wider mb-3">Honors</h4>
-              <div className="p-3 rounded-lg bg-ai-cyan/10 border border-ai-cyan/20">
-                <p className="text-white text-sm">{member.honors}</p>
-              </div>
-            </div>
-          )}
-
-          {member.credentials && (
-            <div className="pt-4 border-t border-glass-border">
-              <h4 className="text-ai-cyan font-mono text-xs uppercase tracking-wider mb-3">Credentials</h4>
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-                {member.credentials.map((cred: any, idx: number) => (
-                  <div key={idx} className="p-3 rounded-lg bg-white/5 border border-glass-border">
-                    <div className="font-medium text-white text-sm mb-1">{cred.title}</div>
-                    <div className="text-quantum-silver text-xs">{cred.issuer}</div>
+                  <div key={idx} className="p-3.5 rounded-lg bg-white/5 border border-glass-border hover:border-electric-blue/30 transition-colors">
+                    <div className="font-semibold text-white text-xs mb-1">{exp.field}</div>
+                    <div className="text-quantum-silver text-[11px] leading-relaxed font-mono">{exp.tech}</div>
                   </div>
                 ))}
               </div>
@@ -249,16 +285,21 @@ const LeadershipCard = ({ member, isExpanded, onExpand, onClose }: any) => {
         </div>
 
         {/* Footer */}
-        <div className="flex-shrink-0 bg-midnight-black border-t border-glass-border p-4">
+        <div className="flex-shrink-0 bg-midnight-black/95 border-t border-glass-border p-4 px-6 flex justify-between items-center">
+          <span className="text-xs font-mono text-quantum-silver">Executive Portfolio</span>
           <div className="flex gap-3">
-            <a href={member.linkedin} target="_blank" rel="noopener noreferrer" className="w-9 h-9 rounded-full bg-white/5 border border-glass-border flex items-center justify-center text-quantum-silver hover:text-white hover:border-blue-500 transition-all">
-              <Linkedin className="w-4 h-4" />
-            </a>
-            <a href={member.twitter} target="_blank" rel="noopener noreferrer" className="w-9 h-9 rounded-full bg-white/5 border border-glass-border flex items-center justify-center text-quantum-silver hover:text-white hover:border-gray-300 transition-all">
-              <Twitter className="w-4 h-4" />
-            </a>
+            {member.linkedin && member.linkedin !== '#' && (
+              <a href={member.linkedin} target="_blank" rel="noopener noreferrer" aria-label="LinkedIn profile" className="w-9 h-9 rounded-full bg-white/5 border border-glass-border flex items-center justify-center text-quantum-silver hover:text-white hover:border-blue-500 hover:bg-blue-500/10 transition-all">
+                <Linkedin className="w-4 h-4" />
+              </a>
+            )}
+            {member.twitter && member.twitter !== '#' && (
+              <a href={member.twitter} target="_blank" rel="noopener noreferrer" aria-label="Twitter profile" className="w-9 h-9 rounded-full bg-white/5 border border-glass-border flex items-center justify-center text-quantum-silver hover:text-white hover:border-cyan-400 hover:bg-cyan-400/10 transition-all">
+                <Twitter className="w-4 h-4" />
+              </a>
+            )}
             {member.github && (
-              <a href={member.github} target="_blank" rel="noopener noreferrer" className="w-9 h-9 rounded-full bg-white/5 border border-glass-border flex items-center justify-center text-quantum-silver hover:text-white hover:border-purple-500 transition-all">
+              <a href={member.github} target="_blank" rel="noopener noreferrer" aria-label="GitHub profile" className="w-9 h-9 rounded-full bg-white/5 border border-glass-border flex items-center justify-center text-quantum-silver hover:text-white hover:border-purple-500 hover:bg-purple-500/10 transition-all">
                 <GithubIcon className="w-4 h-4" />
               </a>
             )}
@@ -272,59 +313,85 @@ const LeadershipCard = ({ member, isExpanded, onExpand, onClose }: any) => {
   return (
     <motion.div
       ref={cardRef}
+      role="button"
+      tabIndex={0}
+      aria-label={`View profile and track record for ${member.name}`}
+      onKeyDown={(e) => {
+        if (e.key === 'Enter' || e.key === ' ') {
+          e.preventDefault();
+          onExpand();
+        }
+      }}
       onMouseMove={handleMouseMove}
       onMouseLeave={handleMouseLeave}
       layout
       whileHover={{ scale: 1.02 }}
       onClick={onExpand}
-      className="relative p-8 h-[340px] max-w-[340px] shrink-0 cursor-pointer rounded-2xl bg-midnight-black/60 border border-glass-border overflow-hidden group transition-all duration-500 hover:shadow-[0_15px_30px_rgba(0,0,0,0.5)]"
+      className="relative p-7 h-[380px] w-[320px] shrink-0 cursor-pointer rounded-2xl bg-midnight-black/70 border border-glass-border overflow-hidden group transition-all duration-500 hover:shadow-[0_15px_30px_rgba(0,0,0,0.6)] focus:outline-none focus:ring-2 focus:ring-ai-cyan"
     >
-      {member.image && (
+      {member.image && !imageError ? (
         <div className="absolute inset-0 z-0 overflow-hidden pointer-events-none rounded-2xl">
-          <img src={member.image} alt={member.name} className="w-full h-full object-cover opacity-75 group-hover:opacity-90 group-hover:scale-105 transition-transform duration-700" referrerPolicy="no-referrer" />
-          <div className="absolute inset-0 bg-gradient-to-t from-midnight-black via-midnight-black/60 to-transparent" />
+          <img 
+            src={member.image} 
+            alt={member.name} 
+            onError={() => setImageError(true)}
+            className="w-full h-full object-cover object-top opacity-80 group-hover:opacity-95 group-hover:scale-105 transition-transform duration-700" 
+            referrerPolicy="no-referrer" 
+          />
+          <div className="absolute inset-0 bg-gradient-to-t from-midnight-black via-midnight-black/70 to-transparent" />
+        </div>
+      ) : (
+        <div className="absolute inset-0 z-0 bg-gradient-to-b from-graphite-grey to-midnight-black flex items-center justify-center">
+          <div className="w-24 h-24 rounded-full bg-white/5 border border-white/10 flex items-center justify-center font-bold text-quantum-silver text-2xl">
+            {getInitials(member.name)}
+          </div>
+          <div className="absolute inset-0 bg-gradient-to-t from-midnight-black via-midnight-black/70 to-transparent" />
         </div>
       )}
 
       <motion.div
         className="absolute inset-0 pointer-events-none opacity-0 group-hover:opacity-100 transition-opacity duration-300 z-1"
         style={{
-          background: useTransform([mouseX, mouseY], ([x, y]) => `radial-gradient(circle at ${x}px ${y}px, rgba(0, 229, 255, 0.15) 0%, transparent 60%)`),
+          background: useTransform([mouseX, mouseY], ([x, y]) => `radial-gradient(circle at ${x}px ${y}px, rgba(0, 229, 255, 0.18) 0%, transparent 65%)`),
         }}
       />
 
       <div className="relative z-10 h-full flex flex-col justify-between">
-        <div className="flex justify-end">
+        <div className="flex justify-between items-center">
+          <span className="text-[10px] font-mono uppercase tracking-wider px-2.5 py-1 rounded-full bg-midnight-black/80 border border-ai-cyan/30 text-ai-cyan backdrop-blur-md">
+            Track Record
+          </span>
           <button
             onClick={(e) => { e.stopPropagation(); onExpand(); }}
-            className="w-10 h-10 rounded-full bg-midnight-black/60 border border-glass-border flex items-center justify-center text-quantum-silver hover:text-white hover:border-ai-cyan transition-all opacity-0 group-hover:opacity-100 shadow-lg backdrop-blur-sm"
+            aria-label="Expand executive card"
+            className="w-9 h-9 rounded-full bg-midnight-black/80 border border-glass-border flex items-center justify-center text-quantum-silver hover:text-white hover:border-ai-cyan transition-all opacity-80 group-hover:opacity-100 shadow-lg backdrop-blur-sm"
           >
             <Maximize2 className="w-4 h-4" />
           </button>
         </div>
 
         <div className="mt-auto">
-          <h3 className="text-xl mb-1 font-bold text-white">{member.name}</h3>
-          <p className="text-ai-cyan font-mono text-xs uppercase tracking-wider mb-4">{member.role}</p>
+          <h3 className="text-xl mb-1 font-bold text-white tracking-tight leading-snug">{member.name}</h3>
+          <p className="text-ai-cyan font-mono text-xs uppercase tracking-wider mb-3 line-clamp-1">{member.role}</p>
 
-          <AnimatePresence>
-            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="hidden group-hover:block">
-              <p className="text-quantum-silver text-sm leading-relaxed mb-4">{member.desc}</p>
-            </motion.div>
-          </AnimatePresence>
+          <p className="text-quantum-silver text-xs leading-relaxed mb-4 line-clamp-2">{member.desc}</p>
 
-          <div className="flex gap-4 pt-4 border-t border-glass-border opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-            <a href={member.linkedin} target="_blank" rel="noopener noreferrer" className="w-10 h-10 rounded-full bg-white/5 border border-glass-border flex items-center justify-center text-quantum-silver hover:text-white hover:border-blue-500 transition-all">
-              <Linkedin className="w-4 h-4" />
-            </a>
-            <a href={member.twitter} target="_blank" rel="noopener noreferrer" className="w-10 h-10 rounded-full bg-white/5 border border-glass-border flex items-center justify-center text-quantum-silver hover:text-white hover:border-gray-300 transition-all">
-              <Twitter className="w-4 h-4" />
-            </a>
-            {member.github && (
-              <a href={member.github} target="_blank" rel="noopener noreferrer" className="w-10 h-10 rounded-full bg-white/5 border border-glass-border flex items-center justify-center text-quantum-silver hover:text-white hover:border-purple-500 transition-all">
-                <GithubIcon className="w-4 h-4" />
-              </a>
-            )}
+          <div className="flex items-center justify-between pt-3 border-t border-glass-border">
+            <span className="text-[11px] font-mono text-ai-cyan/80 group-hover:text-ai-cyan flex items-center gap-1">
+              Click to view full dossier →
+            </span>
+            <div className="flex gap-2" onClick={(e) => e.stopPropagation()}>
+              {member.linkedin && member.linkedin !== '#' && (
+                <a href={member.linkedin} target="_blank" rel="noopener noreferrer" aria-label="LinkedIn" className="w-7 h-7 rounded-full bg-white/5 border border-glass-border flex items-center justify-center text-quantum-silver hover:text-white hover:border-blue-500 transition-all">
+                  <Linkedin className="w-3.5 h-3.5" />
+                </a>
+              )}
+              {member.github && (
+                <a href={member.github} target="_blank" rel="noopener noreferrer" aria-label="GitHub" className="w-7 h-7 rounded-full bg-white/5 border border-glass-border flex items-center justify-center text-quantum-silver hover:text-white hover:border-purple-500 transition-all">
+                  <GithubIcon className="w-3.5 h-3.5" />
+                </a>
+              )}
+            </div>
           </div>
         </div>
       </div>
@@ -332,27 +399,24 @@ const LeadershipCard = ({ member, isExpanded, onExpand, onClose }: any) => {
   );
 };
 
-const SkeletonCard = () => (
-  <div className="h-[340px] max-w-[340px] shrink-0 p-8 rounded-2xl bg-midnight-black/40 border border-glass-border animate-pulse flex flex-col justify-end">
-     <div className="h-6 w-3/4 bg-white/5 rounded mb-3" />
-     <div className="h-4 w-1/2 bg-white/5 rounded" />
-  </div>
-);
-
 export default function LeadershipSection() {
-  const [isLoading, setIsLoading] = useState(true);
   const [expandedIndex, setExpandedIndex] = useState<number | null>(null);
   const carouselRef = useRef<HTMLDivElement>(null);
 
+  // Close on Escape key press
   useEffect(() => {
-    // Simulate network request for perceived performance enhancement
-    const timer = setTimeout(() => setIsLoading(false), 2000);
-    return () => clearTimeout(timer);
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        setExpandedIndex(null);
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
   }, []);
   
   const scroll = (direction: 'left' | 'right') => {
     if (carouselRef.current) {
-      const scrollAmount = 350;
+      const scrollAmount = 340;
       carouselRef.current.scrollBy({
         left: direction === 'left' ? -scrollAmount : scrollAmount,
         behavior: 'smooth'
@@ -361,23 +425,34 @@ export default function LeadershipSection() {
   };
 
   return (
-    <section className="leadership-section py-32 px-6 relative z-10 bg-deep-charcoal border-t border-glass-border">
+    <section id="leadership" className="leadership-section py-32 px-6 relative z-10 bg-deep-charcoal border-t border-glass-border">
       <div className="absolute inset-0 opacity-20 bg-[radial-gradient(ellipse_at_bottom,rgba(0,229,255,0.1),transparent_70%)] pointer-events-none" />
       
       <div className="max-w-7xl mx-auto relative z-10">
         <div className="flex flex-col md:flex-row md:items-end justify-between mb-16 gap-6">
           <div className="max-w-2xl">
-            <h2 className="text-4xl md:text-5xl font-bold text-white mb-6">The Executives and Their Track Record</h2>
-            <p className="text-xl text-quantum-silver font-light">
-              The visionaries and innovators architecting the future of enterprise intelligence.
+            <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full border border-ai-cyan/30 bg-ai-cyan/10 text-ai-cyan font-mono text-xs tracking-wider uppercase mb-4">
+              Executive Governance
+            </div>
+            <h2 className="text-4xl md:text-5xl font-bold text-white mb-4 tracking-tight">The Executives and Their Track Record</h2>
+            <p className="text-lg text-quantum-silver font-light">
+              The visionaries, research scientists, and system architects driving Africa’s leading enterprise intelligence ecosystem.
             </p>
           </div>
           
-          <div className="flex gap-4">
-            <button onClick={() => scroll('left')} className="w-12 h-12 rounded-full border border-glass-border flex items-center justify-center text-white hover:bg-white/5 transition-colors">
+          <div className="flex items-center gap-3">
+            <button 
+              onClick={() => scroll('left')} 
+              aria-label="Previous executive"
+              className="w-12 h-12 rounded-full border border-glass-border flex items-center justify-center text-white hover:bg-white/10 hover:border-ai-cyan transition-all"
+            >
                <ChevronLeft className="w-5 h-5" />
             </button>
-            <button onClick={() => scroll('right')} className="w-12 h-12 rounded-full border border-glass-border flex items-center justify-center text-white hover:bg-white/5 transition-colors bg-white/5">
+            <button 
+              onClick={() => scroll('right')} 
+              aria-label="Next executive"
+              className="w-12 h-12 rounded-full border border-glass-border flex items-center justify-center text-white hover:bg-white/10 hover:border-ai-cyan transition-all bg-white/5"
+            >
                <ChevronRight className="w-5 h-5" />
             </button>
           </div>
@@ -392,9 +467,9 @@ export default function LeadershipSection() {
                    animate={{ opacity: 1 }}
                    exit={{ opacity: 0 }}
                    onClick={() => setExpandedIndex(null)}
-                   className="fixed inset-0 bg-black/80 backdrop-blur-md z-[9999] flex items-start justify-center pt-20 pb-8 overflow-y-auto"
+                   className="fixed inset-0 bg-black/85 backdrop-blur-md z-[9999] flex items-center justify-center p-4 sm:p-6 overflow-y-auto"
                 >
-                   <div onClick={e => e.stopPropagation()}>
+                   <div onClick={e => e.stopPropagation()} className="w-full flex justify-center">
                      <LeadershipCard 
                         member={leadershipData[expandedIndex]} 
                         isExpanded={true} 
@@ -407,24 +482,18 @@ export default function LeadershipSection() {
 
            <div 
              ref={carouselRef}
-             className="flex gap-6 overflow-x-auto pb-8 snap-x hide-scrollbar"
+             className="flex gap-6 overflow-x-auto pb-8 pt-2 snap-x hide-scrollbar"
              style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
            >
-             {isLoading ? (
-                Array.from({ length: 5 }).map((_, i) => (
-                   <div key={`skeleton-${i}`} className="snap-start"><SkeletonCard /></div>
-                ))
-             ) : (
-                leadershipData.map((member, idx) => (
-                   <div key={idx} className="snap-start shadow-xl">
-                     <LeadershipCard 
-                        member={member} 
-                        isExpanded={false}
-                        onExpand={() => setExpandedIndex(idx)} 
-                     />
-                   </div>
-                ))
-             )}
+             {leadershipData.map((member, idx) => (
+                <div key={idx} className="snap-start shadow-xl">
+                  <LeadershipCard 
+                     member={member} 
+                     isExpanded={false}
+                     onExpand={() => setExpandedIndex(idx)} 
+                  />
+                </div>
+             ))}
            </div>
         </div>
       </div>
