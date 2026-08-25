@@ -154,31 +154,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     try {
       const { error } = await supabase.auth.signInWithPassword({ email, password });
       if (error) {
-        if (email.toLowerCase() === 'simao@neurogrowthlabs.co.za' && password === 'NeuroGrowth2@') {
-          console.warn("Supabase auth failed. Using local fallback session.");
-          localStorage.setItem('local_admin_session', 'true');
-          setUser({
-            uid: 'simao-fallback-id',
-            id: 'simao-fallback-id',
-            email: 'simao@neurogrowthlabs.co.za'
-          });
-          setUserRole('super_admin');
-          return;
-        }
         throw error;
       }
     } catch (err: any) {
-      if (email.toLowerCase() === 'simao@neurogrowthlabs.co.za' && password === 'NeuroGrowth2@') {
-        console.warn("Supabase auth request failed. Using local fallback session.", err);
-        localStorage.setItem('local_admin_session', 'true');
-        setUser({
-          uid: 'simao-fallback-id',
-          id: 'simao-fallback-id',
-          email: 'simao@neurogrowthlabs.co.za'
-        });
-        setUserRole('super_admin');
-        return;
-      }
       throw err;
     }
   };
@@ -225,4 +203,3 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     </AuthContext.Provider>
   );
 };
-
